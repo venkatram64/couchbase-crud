@@ -1,0 +1,9 @@
+spring:
+  couchbase:
+    env:
+      io:
+        http:
+          maxChunkSize: 8192
+  data:
+    couchbase:
+      auto-index: true
