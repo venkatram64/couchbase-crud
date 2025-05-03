@@ -1,7 +1,6 @@
 package com.venkat.couch_base_crud.controller;
 
 import com.venkat.couch_base_crud.model.Employee;
-import com.venkat.couch_base_crud.repository.EmployeeRepository;
 import com.venkat.couch_base_crud.service.EmployeeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

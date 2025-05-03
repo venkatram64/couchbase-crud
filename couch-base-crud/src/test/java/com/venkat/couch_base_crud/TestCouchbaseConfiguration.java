@@ -8,7 +8,6 @@ import org.testcontainers.couchbase.BucketDefinition;
 import org.testcontainers.couchbase.CouchbaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class TestCouchbaseConfiguration {
@@ -19,6 +18,7 @@ public class TestCouchbaseConfiguration {
         return new CouchbaseContainer(DockerImageName.parse("couchbase/server:7.6.0"))
                 .withBucket(new BucketDefinition("employee")
                         .withPrimaryIndex(true)
-                        .withFlushEnabled(false)); // Disable flush for query-based cleanup
+                        .withFlushEnabled(true))
+                .withReuse(false); // Disable flush for query-based cleanup
     }
 }
