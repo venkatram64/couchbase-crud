@@ -1,0 +1,14 @@
+server:
+    port: 8090
+spring:
+  application:
+    name: couch-base-crud
+  couchbase:
+    connection-string: couchbase://localhost
+    username: admin
+    password: admin1234
+    bucket:
+      name: employee
+  data:
+    couchbase:
+      auto-index: true
