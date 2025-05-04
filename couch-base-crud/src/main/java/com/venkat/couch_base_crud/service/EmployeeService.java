@@ -82,6 +82,7 @@ public class EmployeeService {
             return employeeRepository.save(existingEmployee);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to update employee");
+
         }
     }
 
@@ -103,7 +104,7 @@ public class EmployeeService {
         if (!StringUtils.hasText(employee.getLastName())) {
             throw new InvalidEmployeeDataException("Last name is required");
         }
-        if (!StringUtils.hasText(employee.getEmail())) {
+        if (!StringUtils.hasText(employee.getEmail()) || !employee.getEmail().contains("@")) {
             throw new InvalidEmployeeDataException("Email is required");
         }
         if (employee.getAddress() == null || employee.getAddress().length == 0) {
