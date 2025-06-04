@@ -16,7 +16,7 @@ public class TestCouchbaseConfiguration {
     @ServiceConnection
     public CouchbaseContainer couchbaseContainer() {
         return new CouchbaseContainer(DockerImageName.parse("couchbase/server:7.6.0"))
-                .withBucket(new BucketDefinition("employee")
+                .withBucket(new BucketDefinition("mycompany")
                         .withPrimaryIndex(true)
                         .withFlushEnabled(true))
                 .withReuse(false); // Disable flush for query-based cleanup
