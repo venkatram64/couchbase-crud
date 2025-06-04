@@ -1,5 +1,7 @@
 package com.venkat.couch_base_crud.service;
 
+import com.venkat.couch_base_crud.dto.EmployeeDto;
+import com.venkat.couch_base_crud.dto.EmployeeMapper;
 import com.venkat.couch_base_crud.exception.CouchbaseOperationException;
 import com.venkat.couch_base_crud.exception.EmployeeAlreadyExistsException;
 import com.venkat.couch_base_crud.exception.EmployeeNotFoundException;
@@ -21,65 +23,72 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
     }
 
-    public List<Employee> getAllEmployees() {
+    public List<EmployeeDto> getAllEmployees() {
         try {
             List<Employee> employees = employeeRepository.findAll();
             if(employees.isEmpty()) {
                 throw new CouchbaseOperationException("No employees found");
             }
-            return employees;
+            return EmployeeMapper.toDtoList(employees);
         }catch (DataAccessException e) {
             throw new CouchbaseOperationException("Unable to fetch employees");
         }
     }
 
-    public Employee getEmployeeById(String id) {
+    public EmployeeDto getEmployeeById(String id) {
         try {
-            return employeeRepository
+            Employee employee = employeeRepository
                     .findById(id)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee with id " + id + " not found"));
+            return EmployeeMapper.toDto(employee);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to fetch employee");
         }
     }
 
-    public Employee getEmployeeByEmail(String email) {
+    public EmployeeDto getEmployeeByEmail(String email) {
         try {
-            return employeeRepository
+                Employee employee = employeeRepository
                     .findByEmail(email)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee with email " + email + " not found"));
+                return EmployeeMapper.toDto(employee);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to fetch employee");
         }
     }
 
     //creating employee
-    public Employee createEmployee(Employee employee) {
-        validateEmployeeData(employee);
+    public EmployeeDto createEmployee(EmployeeDto employee) {
+        Employee emp = EmployeeMapper.toEntity(employee);
+        validateEmployeeData(emp);
         try {
             //check if employee with email already exists
-            if(employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
+            if(employeeRepository.findByEmail(emp.getEmail()).isPresent()) {
                 throw new EmployeeAlreadyExistsException("Employee with email " + employee.getEmail() + " already exists");
             }
-            return employeeRepository.save(employee);
+            Employee savedEmp = employeeRepository.save(emp);
+            return EmployeeMapper.toDto(savedEmp);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to create employee");
         }
     }
 
-    public Employee updateEmployee(String id, Employee employee) {
-        validateEmployeeData(employee);
+    public EmployeeDto updateEmployee(String id, EmployeeDto employee) {
+        Employee emp = EmployeeMapper.toEntity(employee);
+        validateEmployeeData(emp);
         try {
             Employee existingEmployee = employeeRepository.findById(id)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee with id " + id + " not found"));
-            if(employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
-                throw new EmployeeAlreadyExistsException("Employee with email " + employee.getEmail() + " already exists");
+            if(employeeRepository.findByEmail(emp.getEmail()).isPresent()) {
+                throw new EmployeeAlreadyExistsException("Employee with email " + emp.getEmail() + " already exists");
             }
-            existingEmployee.setFirstName(employee.getFirstName());
-            existingEmployee.setLastName(employee.getLastName());
-            existingEmployee.setEmail(employee.getEmail());
-            existingEmployee.setAddress(employee.getAddress());
-            return employeeRepository.save(existingEmployee);
+            existingEmployee.setFirstName(emp.getFirstName());
+            existingEmployee.setLastName(emp.getLastName());
+            existingEmployee.setEmail(emp.getEmail());
+            existingEmployee.setAddress(emp.getAddress());
+            existingEmployee.setPhones(emp.getPhones());
+            Employee updatedEmp = employeeRepository.save(existingEmployee);
+            return EmployeeMapper.toDto(updatedEmp);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to update employee");
 
@@ -89,7 +98,8 @@ public class EmployeeService {
     public void deleteEmployee(String id) {
         try {
             //employeeRepository.deleteById(id);
-            Employee employee = getEmployeeById(id);
+            EmployeeDto empDto = getEmployeeById(id);
+            Employee employee = EmployeeMapper.toEntity(empDto);
             employeeRepository.delete(employee);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to delete employee");
@@ -107,8 +117,11 @@ public class EmployeeService {
         if (!StringUtils.hasText(employee.getEmail()) || !employee.getEmail().contains("@")) {
             throw new InvalidEmployeeDataException("Email is required");
         }
-        if (employee.getAddress() == null || employee.getAddress().length == 0) {
+        if (employee.getAddress() == null) {
             throw new InvalidEmployeeDataException("At least one address is required");
+        }
+        if(employee.getPhones() == null || employee.getPhones().isEmpty()) {
+            throw new InvalidEmployeeDataException("At least one phone is required");
         }
     }
 

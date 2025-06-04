@@ -1,10 +1,14 @@
 package com.venkat.couch_base_crud.service;
 
+import com.venkat.couch_base_crud.dto.EmployeeDto;
+import com.venkat.couch_base_crud.dto.EmployeeMapper;
 import com.venkat.couch_base_crud.exception.CouchbaseOperationException;
 import com.venkat.couch_base_crud.exception.EmployeeAlreadyExistsException;
 import com.venkat.couch_base_crud.exception.EmployeeNotFoundException;
 import com.venkat.couch_base_crud.exception.InvalidEmployeeDataException;
+import com.venkat.couch_base_crud.model.Address;
 import com.venkat.couch_base_crud.model.Employee;
+import com.venkat.couch_base_crud.model.Phone;
 import com.venkat.couch_base_crud.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,13 +39,17 @@ class EmployeeServiceTest {
 
     @BeforeEach
     void setUp() {
+        Address mockAddress = new Address("123 Main St", "New York", "NY", "10001");
+        Phone mockPhone = new Phone("home", "123-456-7890");
+        List<Phone> mockPhoneList = Arrays.asList(mockPhone);
+
         validEmployee = new Employee(
                 "1", "John", "Doe", "john.doe@example.com",
-                new String[]{"123 Main St"});
+                mockAddress, mockPhoneList);
 
         existingEmployee = new Employee(
                 "2", "Jane", "Smith", "jane.smith@example.com",
-                new String[]{"456 Oak Ave"});
+                mockAddress, mockPhoneList);
     }
 
     @Test
@@ -53,12 +61,15 @@ class EmployeeServiceTest {
                 .thenReturn(validEmployee);
 
         // Act
-        Employee result = employeeService.createEmployee(validEmployee);
+        EmployeeDto employeeValidDto = EmployeeMapper.toDto(validEmployee);
+        Employee unsavedEmp = EmployeeMapper.toEntity(employeeValidDto);
+        unsavedEmp.setId(null);
+        EmployeeDto result = employeeService.createEmployee(employeeValidDto);
 
         // Assert
         assertNotNull(result);
         assertEquals(validEmployee.getEmail(), result.getEmail());
-        verify(employeeRepository, times(1)).save(validEmployee);
+        verify(employeeRepository, times(1)).save(unsavedEmp);
     }
 
     @Test
@@ -68,15 +79,16 @@ class EmployeeServiceTest {
                 .thenReturn(Optional.of(existingEmployee));
 
         // Act & Assert
+        EmployeeDto employeeExistingDto = EmployeeMapper.toDto(existingEmployee);
         assertThrows(EmployeeAlreadyExistsException.class, () -> {
-            employeeService.createEmployee(existingEmployee);
+            employeeService.createEmployee(employeeExistingDto);
         });
     }
 
     @Test
     void createEmployee_WithInvalidData_ShouldThrowException() {
         // Arrange
-        Employee invalidEmployee = new Employee();
+        EmployeeDto invalidEmployee = new EmployeeDto();
         invalidEmployee.setEmail("invalid-email");
 
         // Act & Assert
@@ -94,7 +106,7 @@ class EmployeeServiceTest {
                 .thenReturn(Optional.of(validEmployee));
 
         // Act
-        Employee result = employeeService.getEmployeeById("1");
+        EmployeeDto result = employeeService.getEmployeeById("1");
 
         // Assert
         assertNotNull(result);
@@ -119,11 +131,15 @@ class EmployeeServiceTest {
     @Test
     void updateEmployee_WithValidData_ShouldReturnUpdatedEmployee() {
         // Arrange
+        Address mockAddress = new Address("123 Main St", "New York", "NY", "10001");
+        Phone mockPhone = new Phone("home", "123-456-7890");
+        List<Phone> mockPhoneList = Arrays.asList(mockPhone);
         Employee updatedDetails = new Employee();
         updatedDetails.setFirstName("Updated");
         updatedDetails.setLastName("Name");
         updatedDetails.setEmail("updated@example.com");
-        updatedDetails.setAddress(new String[]{"New Address"});
+        updatedDetails.setAddress(mockAddress);
+        updatedDetails.setPhones(mockPhoneList);
 
         when(employeeRepository.findById("1"))
                 .thenReturn(Optional.of(validEmployee));
@@ -133,7 +149,8 @@ class EmployeeServiceTest {
                 .thenReturn(updatedDetails);
 
         // Act
-        Employee result = employeeService.updateEmployee("1", updatedDetails);
+        EmployeeDto employeeUpdatedDto = EmployeeMapper.toDto(updatedDetails);
+        EmployeeDto result = employeeService.updateEmployee("1", employeeUpdatedDto);
 
         // Assert
         assertNotNull(result);
@@ -144,11 +161,15 @@ class EmployeeServiceTest {
     @Test
     void updateEmployee_WithDuplicateEmail_ShouldThrowException() {
         // Arrange
+        Address mockAddress = new Address("123 Main St", "New York", "NY", "10001");
+        Phone mockPhone = new Phone("home", "123-456-7890");
+        List<Phone> mockPhoneList = Arrays.asList(mockPhone);
         Employee updatedDetails = new Employee();
         updatedDetails.setFirstName("Updated");
         updatedDetails.setLastName("Name");
         updatedDetails.setEmail("jane.smith@example.com"); // Existing email
-        updatedDetails.setAddress(new String[]{"New Address"});
+        updatedDetails.setAddress(mockAddress);
+        updatedDetails.setPhones(mockPhoneList);
 
         when(employeeRepository.findById("1"))
                 .thenReturn(Optional.of(validEmployee));
@@ -156,8 +177,9 @@ class EmployeeServiceTest {
                 .thenReturn(Optional.of(existingEmployee));
 
         // Act & Assert
+        EmployeeDto employeeUpdatedDto = EmployeeMapper.toDto(updatedDetails);
         assertThrows(EmployeeAlreadyExistsException.class, () -> {
-            employeeService.updateEmployee("1", updatedDetails);
+            employeeService.updateEmployee("1", employeeUpdatedDto);
         });
     }
 
@@ -168,13 +190,14 @@ class EmployeeServiceTest {
         // Arrange
         when(employeeRepository.findById("1"))
                 .thenReturn(Optional.of(validEmployee));
-        doNothing().when(employeeRepository).delete(validEmployee);
+        doNothing().when(employeeRepository).delete(any(Employee.class));
 
         // Act
         employeeService.deleteEmployee("1");
 
         // Assert
-        verify(employeeRepository, times(1)).delete(validEmployee);
+        verify(employeeRepository, times(1)).findById("1");
+        verify(employeeRepository, times(1)).delete(any(Employee.class));
     }
 
     @Test
@@ -198,7 +221,7 @@ class EmployeeServiceTest {
                 .thenReturn(Optional.of(validEmployee));
 
         // Act
-        Employee result = employeeService.getEmployeeByEmail("john.doe@example.com");
+        EmployeeDto result = employeeService.getEmployeeByEmail("john.doe@example.com");
 
         // Assert
         assertNotNull(result);
@@ -237,7 +260,7 @@ class EmployeeServiceTest {
                 .thenReturn(Arrays.asList(validEmployee, existingEmployee));
 
         // Act
-        List<Employee> result = employeeService.getAllEmployees();
+        List<EmployeeDto> result = employeeService.getAllEmployees();
 
         // Assert
         assertEquals(2, result.size());
@@ -253,23 +276,10 @@ class EmployeeServiceTest {
                 .thenThrow(new CouchbaseOperationException("DB Error"));
 
         // Act & Assert
+        EmployeeDto employeeValidDto = EmployeeMapper.toDto(validEmployee);
         assertThrows(CouchbaseOperationException.class, () -> {
-            employeeService.createEmployee(validEmployee);
+            employeeService.createEmployee(employeeValidDto);
         });
     }
-
-
-
-    private Employee createTestEmployee(String id, String firstName, String lastName,
-                                        String email, String[] address) {
-        Employee employee = new Employee();
-        employee.setId(id);
-        employee.setFirstName(firstName);
-        employee.setLastName(lastName);
-        employee.setEmail(email);
-        employee.setAddress(address);
-        return employee;
-    }
-
 
 }

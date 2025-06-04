@@ -1,8 +1,12 @@
 package com.venkat.couch_base_crud.controller;
 
+import com.venkat.couch_base_crud.dto.AddressDto;
+import com.venkat.couch_base_crud.dto.EmployeeDto;
+import com.venkat.couch_base_crud.dto.PhoneDto;
 import com.venkat.couch_base_crud.exception.*;
 import com.venkat.couch_base_crud.model.Employee;
 import com.venkat.couch_base_crud.service.EmployeeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -38,12 +42,23 @@ class EmployeeControllerTest {
     private final String BASE_URL = "/employee/v1";
     private final String EMPLOYEE_ID = UUID.randomUUID().toString();
 
-    private final Employee mockEmployee = new Employee(
-            EMPLOYEE_ID,
-            "John",
-            "Doe",
-            "john.doe@example.com",
-            new String[]{"123 Main St"});
+    private EmployeeDto mockEmployee = null;
+
+    @BeforeEach
+    public void setup(){
+        AddressDto mockAddress = new AddressDto("123 Main St", "New York", "NY", "10001");
+        PhoneDto mockPhone = new PhoneDto("home", "123-456-7890");
+        List<PhoneDto> mockPhoneList = Arrays.asList(mockPhone);
+
+        mockEmployee = new EmployeeDto(
+                EMPLOYEE_ID,
+                "John",
+                "Doe",
+                "john.doe@example.com",
+                mockAddress,
+                mockPhoneList);
+    }
+
 
     @Test
     void getAllEmployees_ShouldReturnEmployees() throws Exception {
@@ -99,7 +114,7 @@ class EmployeeControllerTest {
 
     @Test
     void createEmployee_ShouldReturnCreated() throws Exception {
-        given(employeeService.createEmployee(any(Employee.class)))
+        given(employeeService.createEmployee(any(EmployeeDto.class)))
                 .willReturn(mockEmployee);
 
         String employeeJson = """
@@ -107,7 +122,18 @@ class EmployeeControllerTest {
             "firstName": "John",
             "lastName": "Doe",
             "email": "john.doe@example.com",
-            "address": ["123 Main St"]
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zipCode": "10001"
+            },
+            "phones": [
+                {
+                    "type": "home",
+                    "number": "123-456-7890"
+                }
+            ]
         }
         """;
 
@@ -117,7 +143,7 @@ class EmployeeControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(EMPLOYEE_ID));
 
-        verify(employeeService).createEmployee(any(Employee.class));
+        verify(employeeService).createEmployee(any(EmployeeDto.class));
     }
 
     @Test
@@ -128,7 +154,7 @@ class EmployeeControllerTest {
             "email": "invalid-email"
         }
         """;
-        given(employeeService.createEmployee(any(Employee.class)))
+        given(employeeService.createEmployee(any(EmployeeDto.class)))
                 .willThrow(new InvalidEmployeeDataException("Invalid data"));;
 
         mockMvc.perform(post("/employee/v1")
@@ -142,14 +168,18 @@ class EmployeeControllerTest {
 
     @Test
     void updateEmployee_ShouldReturnUpdatedEmployee() throws Exception {
-        Employee updatedEmployee = new Employee(
+        AddressDto mockAddress = new AddressDto("123 Main St", "New York", "NY", "16001");
+        PhoneDto mockPhone = new PhoneDto("home", "123-456-9890");
+        List<PhoneDto> mockPhoneList = Arrays.asList(mockPhone);
+        EmployeeDto updatedEmployee = new EmployeeDto(
                 EMPLOYEE_ID,
                 "John",
                 "Updated",
                 "john.updated@example.com",
-                new String[]{"456 New St"});
+                mockAddress,
+                mockPhoneList);
 
-        given(employeeService.updateEmployee(eq(EMPLOYEE_ID), any(Employee.class)))
+        given(employeeService.updateEmployee(eq(EMPLOYEE_ID), any(EmployeeDto.class)))
                 .willReturn(updatedEmployee);
 
         String updateJson = """
@@ -157,7 +187,18 @@ class EmployeeControllerTest {
             "firstName": "John",
             "lastName": "Updated",
             "email": "john.updated@example.com",
-            "address": ["456 New St"]
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zipCode": "16001"
+            },
+            "phones": [
+                {
+                    "type": "home",
+                    "number": "123-456-9890"
+                }
+            ]
         }
         """;
 
@@ -168,7 +209,7 @@ class EmployeeControllerTest {
                 .andExpect(jsonPath("$.lastName").value("Updated"))
                 .andExpect(jsonPath("$.email").value("john.updated@example.com"));
 
-        verify(employeeService).updateEmployee(eq(EMPLOYEE_ID), any(Employee.class));
+        verify(employeeService).updateEmployee(eq(EMPLOYEE_ID), any(EmployeeDto.class));
     }
 
     @Test
@@ -192,7 +233,7 @@ class EmployeeControllerTest {
 
     @Test
     void handleEmployeeAlreadyExistsException() throws Exception {
-        given(employeeService.createEmployee(any(Employee.class)))
+        given(employeeService.createEmployee(any(EmployeeDto.class)))
                 .willThrow(new EmployeeAlreadyExistsException("Email exists"));
 
         String employeeJson = """
@@ -200,7 +241,18 @@ class EmployeeControllerTest {
             "firstName": "John",
             "lastName": "Doe",
             "email": "existing@example.com",
-            "address": ["123 Main St"]
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zipCode": "10001"
+            },
+            "phones": [
+                {
+                    "type": "home",
+                    "number": "123-456-7890"
+                }
+            ]
         }
         """;
 
@@ -213,7 +265,7 @@ class EmployeeControllerTest {
 
     @Test
     void handleInvalidEmployeeDataException() throws Exception {
-        given(employeeService.createEmployee(any(Employee.class)))
+        given(employeeService.createEmployee(any(EmployeeDto.class)))
                 .willThrow(new InvalidEmployeeDataException("Invalid data"));
 
         mockMvc.perform(post(BASE_URL)

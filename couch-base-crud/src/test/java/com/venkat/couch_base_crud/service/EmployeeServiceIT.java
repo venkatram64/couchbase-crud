@@ -1,15 +1,19 @@
 package com.venkat.couch_base_crud.service;
 
 import com.venkat.couch_base_crud.BaseIntegrationTest;
+import com.venkat.couch_base_crud.dto.AddressDto;
+import com.venkat.couch_base_crud.dto.EmployeeDto;
+import com.venkat.couch_base_crud.dto.PhoneDto;
 import com.venkat.couch_base_crud.exception.CouchbaseOperationException;
 import com.venkat.couch_base_crud.exception.EmployeeAlreadyExistsException;
 import com.venkat.couch_base_crud.exception.EmployeeNotFoundException;
 import com.venkat.couch_base_crud.exception.InvalidEmployeeDataException;
-import com.venkat.couch_base_crud.model.Employee;
+import com.venkat.couch_base_crud.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,20 +26,28 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	@Autowired
 	private EmployeeService employeeService;
 
+	@Autowired
+	private EmployeeRepository employeeRepository;
 
-	private Employee createTestEmployee() {
-		Employee employee = new Employee();
+
+	private EmployeeDto createTestEmployee() {
+		AddressDto mockAddress = new AddressDto("123 Main St", "New York", "NY", "10001");
+		PhoneDto mockPhone = new PhoneDto("home", "123-456-7890");
+		List<PhoneDto> mockPhoneList = Arrays.asList(mockPhone);
+
+		EmployeeDto employee = new EmployeeDto();
 		employee.setFirstName("John");
 		employee.setLastName("Doe");
 		employee.setEmail(UUID.randomUUID().toString() + "-" + System.currentTimeMillis() + "@test.com");
-		employee.setAddress(new String[]{"123 Test St"});
+		employee.setAddress(mockAddress);
+		employee.setPhones(mockPhoneList);
 		return employee;
 	}
 
 	@Test
 	void createEmployee_WithValidData_ShouldReturnSavedEmployee() {
-		Employee employee = createTestEmployee();
-		Employee saved = employeeService.createEmployee(employee);
+		EmployeeDto employee = createTestEmployee();
+		EmployeeDto saved = employeeService.createEmployee(employee);
 
 		assertNotNull(saved.getId());
 		assertEquals(employee.getFirstName(), saved.getFirstName());
@@ -43,7 +55,7 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void createEmployee_WithDuplicateEmail_ShouldThrowException() {
-		Employee employee = createTestEmployee();
+		EmployeeDto employee = createTestEmployee();
 		employeeService.createEmployee(employee);
 
 		assertThrows(EmployeeAlreadyExistsException.class, () -> {
@@ -53,7 +65,7 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void createEmployee_WithMissingRequiredFields_ShouldThrowException() {
-		Employee invalidEmployee = new Employee();
+		EmployeeDto invalidEmployee = new EmployeeDto();
 		invalidEmployee.setEmail("invalid@test.com");
 
 		assertThrows(InvalidEmployeeDataException.class, () -> {
@@ -64,8 +76,8 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	// READ tests
 	@Test
 	void getEmployeeById_WithValidId_ShouldReturnEmployee() {
-		Employee employee = employeeService.createEmployee(createTestEmployee());
-		Employee found = employeeService.getEmployeeById(employee.getId());
+		EmployeeDto employee = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto found = employeeService.getEmployeeById(employee.getId());
 
 		assertEquals(employee.getId(), found.getId());
 	}
@@ -79,15 +91,17 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void getAllEmployees_ShouldReturnAllEmployees() {
-		employeeService.createEmployee(createTestEmployee());
-		employeeService.createEmployee(createTestEmployee());
+		employeeRepository.deleteAll();
+		EmployeeDto empDto = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto empDto2 = employeeService.createEmployee(createTestEmployee());
 
-		List<Employee> employees = employeeService.getAllEmployees();
+		List<EmployeeDto> employees = employeeService.getAllEmployees();
 		assertTrue(employees.size() >= 2);
 	}
 
 	@Test
 	void getAllEmployees_WhenNoEmployees_ShouldThrowException() {
+		employeeRepository.deleteAll();
 		assertThrows(CouchbaseOperationException.class, () -> {
 			employeeService.getAllEmployees();
 		});
@@ -97,11 +111,11 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	@Test
 	//@RepeatedTest(3)
 	void updateEmployee_WithValidData_ShouldUpdateEmployee() {
-		Employee original = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto original = employeeService.createEmployee(createTestEmployee());
 		original.setEmail("updated@example.com");
 		original.setFirstName("Updated");
 
-		Employee updated = employeeService.updateEmployee(original.getId(), original);
+		EmployeeDto updated = employeeService.updateEmployee(original.getId(), original);
 		assertEquals("Updated", updated.getFirstName());
 	}
 
@@ -114,8 +128,8 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void updateEmployee_WithDuplicateEmail_ShouldThrowException() {
-		Employee emp1 = employeeService.createEmployee(createTestEmployee());
-		Employee emp2 = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto emp1 = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto emp2 = employeeService.createEmployee(createTestEmployee());
 
 		emp2.setEmail(emp1.getEmail());
 
@@ -127,7 +141,7 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	// DELETE tests
 	@Test
 	void deleteEmployee_WithValidId_ShouldDeleteEmployee() {
-		Employee employee = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto employee = employeeService.createEmployee(createTestEmployee());
 		assertDoesNotThrow(() -> employeeService.deleteEmployee(employee.getId()));
 
 		assertThrows(EmployeeNotFoundException.class, () -> {
@@ -145,8 +159,8 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	// Additional query tests
 	@Test
 	void findByEmail_WithExistingEmail_ShouldReturnEmployee() {
-		Employee employee = employeeService.createEmployee(createTestEmployee());
-		Employee found = employeeService.getEmployeeByEmail(employee.getEmail());
+		EmployeeDto employee = employeeService.createEmployee(createTestEmployee());
+		EmployeeDto found = employeeService.getEmployeeByEmail(employee.getEmail());
 
 		assertEquals(employee.getId(), found.getId());
 	}

@@ -1,5 +1,6 @@
-package com.venkat.couch_base_crud.model;
+package com.venkat.couch_base_crud.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,47 +9,33 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.couchbase.core.index.QueryIndexed;
-import org.springframework.data.couchbase.core.mapping.Document;
-import org.springframework.data.couchbase.core.mapping.Field;
-import org.springframework.data.couchbase.core.mapping.id.GeneratedValue;
-import org.springframework.data.couchbase.core.mapping.id.GenerationStrategy;
-
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Document
-public class Employee {
-    @Id
-    @GeneratedValue(strategy = GenerationStrategy.UNIQUE)
-    private String id;
+@NoArgsConstructor
+public class EmployeeDto {
+    private String id; // Not validated since it's generated
 
-    @Field
     @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name cannot exceed 100 characters")
     private String firstName;
 
-    @Field
     @NotBlank(message = "Last name is required")
     @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
 
-    @Field
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
     @Size(max = 255, message = "Email cannot exceed 255 characters")
-    @QueryIndexed
     private String email;
 
-    @Field
     @NotNull(message = "Address is required")
-    private Address address;
+    @Valid // Ensures AddressDTO validation is triggered
+    private AddressDto address;
 
-    @Field
     @NotNull(message = "Phone list cannot be null")
     @Size(min = 1, message = "At least one phone is required")
-    private List<Phone> phones;
+    @Valid // Ensures PhoneDTO validation is triggered
+    private List<PhoneDto> phones;
 }

@@ -1,5 +1,6 @@
 package com.venkat.couch_base_crud.controller;
 
+import com.venkat.couch_base_crud.dto.EmployeeDto;
 import com.venkat.couch_base_crud.model.Employee;
 import com.venkat.couch_base_crud.service.EmployeeService;
 import org.springframework.http.HttpStatus;
@@ -19,23 +20,23 @@ public class EmployeeController {
     }
 
     @GetMapping("v1")
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeDto>> getAllEmployees() {
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
     @GetMapping("/v1/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable String id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
     @PostMapping("/v1")
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employee) {
         return new ResponseEntity<>(employeeService.createEmployee(employee), HttpStatus.CREATED);
     }
 
     @PutMapping("/v1/{id}")
-    public ResponseEntity<Employee> updateEmployee(
-            @PathVariable String id, @RequestBody Employee employee) {
+    public ResponseEntity<EmployeeDto> updateEmployee(
+            @PathVariable String id, @RequestBody EmployeeDto employee) {
         return ResponseEntity.ok(employeeService.updateEmployee(id, employee));
     }
 
