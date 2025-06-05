@@ -59,7 +59,7 @@ public class EmployeeService {
 
     //creating employee
     public EmployeeDto createEmployee(EmployeeDto employee) {
-        Employee emp = EmployeeMapper.toEntity(employee);
+        Employee emp = EmployeeMapper.toDocument(employee);
         validateEmployeeData(emp);
         try {
             //check if employee with email already exists
@@ -74,14 +74,11 @@ public class EmployeeService {
     }
 
     public EmployeeDto updateEmployee(String id, EmployeeDto employee) {
-        Employee emp = EmployeeMapper.toEntity(employee);
+        Employee emp = EmployeeMapper.toDocument(employee);
         validateEmployeeData(emp);
         try {
             Employee existingEmployee = employeeRepository.findById(id)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee with id " + id + " not found"));
-            if(employeeRepository.findByEmail(emp.getEmail()).isPresent()) {
-                throw new EmployeeAlreadyExistsException("Employee with email " + emp.getEmail() + " already exists");
-            }
             existingEmployee.setFirstName(emp.getFirstName());
             existingEmployee.setLastName(emp.getLastName());
             existingEmployee.setEmail(emp.getEmail());
@@ -99,7 +96,7 @@ public class EmployeeService {
         try {
             //employeeRepository.deleteById(id);
             EmployeeDto empDto = getEmployeeById(id);
-            Employee employee = EmployeeMapper.toEntity(empDto);
+            Employee employee = EmployeeMapper.toDocument(empDto);
             employeeRepository.delete(employee);
         }catch(DataAccessException e) {
             throw new CouchbaseOperationException("Unable to delete employee");

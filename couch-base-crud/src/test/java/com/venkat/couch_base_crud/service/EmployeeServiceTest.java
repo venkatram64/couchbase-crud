@@ -62,7 +62,7 @@ class EmployeeServiceTest {
 
         // Act
         EmployeeDto employeeValidDto = EmployeeMapper.toDto(validEmployee);
-        Employee unsavedEmp = EmployeeMapper.toEntity(employeeValidDto);
+        Employee unsavedEmp = EmployeeMapper.toDocument(employeeValidDto);
         unsavedEmp.setId(null);
         EmployeeDto result = employeeService.createEmployee(employeeValidDto);
 

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PhoneMapper {
-    public static Phone toEntity(PhoneDto dto) {
+    public static Phone toDocument(PhoneDto dto) {
         if (dto == null) return null;
 
         Phone phone = new Phone();
@@ -17,15 +17,15 @@ public class PhoneMapper {
 
     public static List<Phone> toEntityList(List<PhoneDto> dtos) {
         if (dtos == null) return null;
-        return dtos.stream().map(PhoneMapper::toEntity).collect(Collectors.toList());
+        return dtos.stream().map(PhoneMapper::toDocument).collect(Collectors.toList());
     }
 
-    public static PhoneDto toDto(Phone entity) {
-        if (entity == null) return null;
+    public static PhoneDto toDto(Phone doc) {
+        if (doc == null) return null;
 
         PhoneDto dto = new PhoneDto();
-        dto.setType(entity.getType());
-        dto.setNumber(entity.getNumber());
+        dto.setType(doc.getType());
+        dto.setNumber(doc.getNumber());
         return dto;
     }
 

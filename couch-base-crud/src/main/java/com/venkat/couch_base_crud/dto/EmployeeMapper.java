@@ -5,7 +5,7 @@ import com.venkat.couch_base_crud.model.Employee;
 import java.util.List;
 
 public class EmployeeMapper {
-    public static Employee toEntity(EmployeeDto dto) {
+    public static Employee toDocument(EmployeeDto dto) {
         if (dto == null) return null;
         Employee employee = new Employee();
         if(dto.getId() != null) {
@@ -14,20 +14,20 @@ public class EmployeeMapper {
         employee.setFirstName(dto.getFirstName());
         employee.setLastName(dto.getLastName());
         employee.setEmail(dto.getEmail());
-        employee.setAddress(AddressMapper.toEntity(dto.getAddress()));
+        employee.setAddress(AddressMapper.toDocument(dto.getAddress()));
         employee.setPhones(PhoneMapper.toEntityList(dto.getPhones()));
         return employee;
     }
 
-    public static EmployeeDto toDto(Employee entity) {
-        if (entity == null) return null;
+    public static EmployeeDto toDto(Employee doc) {
+        if (doc == null) return null;
         EmployeeDto dto = new EmployeeDto();
-        dto.setId(entity.getId());
-        dto.setFirstName(entity.getFirstName());
-        dto.setLastName(entity.getLastName());
-        dto.setEmail(entity.getEmail());
-        dto.setAddress(AddressMapper.toDto(entity.getAddress()));
-        dto.setPhones(PhoneMapper.toDtoList(entity.getPhones()));
+        dto.setId(doc.getId());
+        dto.setFirstName(doc.getFirstName());
+        dto.setLastName(doc.getLastName());
+        dto.setEmail(doc.getEmail());
+        dto.setAddress(AddressMapper.toDto(doc.getAddress()));
+        dto.setPhones(PhoneMapper.toDtoList(doc.getPhones()));
         return dto;
     }
 

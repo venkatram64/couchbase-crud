@@ -3,7 +3,7 @@ package com.venkat.couch_base_crud.dto;
 import com.venkat.couch_base_crud.model.Address;
 
 public class AddressMapper {
-    public static Address toEntity(AddressDto dto) {
+    public static Address toDocument(AddressDto dto) {
         if (dto == null) return null;
 
         Address address = new Address();
@@ -14,14 +14,14 @@ public class AddressMapper {
         return address;
     }
 
-    public static AddressDto toDto(Address entity) {
-        if (entity == null) return null;
+    public static AddressDto toDto(Address doc) {
+        if (doc == null) return null;
 
         AddressDto dto = new AddressDto();
-        dto.setStreet(entity.getStreet());
-        dto.setCity(entity.getCity());
-        dto.setState(entity.getState());
-        dto.setZip(entity.getZip());
+        dto.setStreet(doc.getStreet());
+        dto.setCity(doc.getCity());
+        dto.setState(doc.getState());
+        dto.setZip(doc.getZip());
         return dto;
     }
 }
