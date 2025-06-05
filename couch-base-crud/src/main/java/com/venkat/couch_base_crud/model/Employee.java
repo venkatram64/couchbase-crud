@@ -28,18 +28,18 @@ public class Employee {//this is document class
 
     @Field
     @NotBlank(message = "First name is required")
-    @Size(max = 100, message = "First name cannot exceed 100 characters")
+    @Size(max = 50, message = "First name cannot exceed 50 characters")
     private String firstName;
 
     @Field
     @NotBlank(message = "Last name is required")
-    @Size(max = 100, message = "Last name cannot exceed 100 characters")
+    @Size(max = 50, message = "Last name cannot exceed 50 characters")
     private String lastName;
 
     @Field
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
-    @Size(max = 255, message = "Email cannot exceed 255 characters")
+    @Size(max = 100, message = "Email cannot exceed 100 characters")
     @QueryIndexed
     private String email;
 
