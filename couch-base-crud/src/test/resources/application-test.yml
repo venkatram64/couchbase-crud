@@ -7,4 +7,4 @@ spring:
   data:
     couchbase:
       auto-index: true
-      bucket-name: mycompany2
+      bucket-name: mycompany

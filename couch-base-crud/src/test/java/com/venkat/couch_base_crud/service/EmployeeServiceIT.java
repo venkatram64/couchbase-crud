@@ -55,12 +55,17 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void createEmployee_WithDuplicateEmail_ShouldThrowException() {
-		EmployeeDto employee = createTestEmployee();
-		employeeService.createEmployee(employee);
-
-		assertThrows(EmployeeAlreadyExistsException.class, () -> {
+		try {
+			EmployeeDto employee = createTestEmployee();
 			employeeService.createEmployee(employee);
-		});
+			Thread.sleep(200);
+			assertThrows(EmployeeAlreadyExistsException.class, () -> {
+				employeeService.createEmployee(employee);
+			});
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			fail("Test interrupted");
+		}
 	}
 
 	@Test
@@ -91,12 +96,17 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 
 	@Test
 	void getAllEmployees_ShouldReturnAllEmployees() {
-		employeeRepository.deleteAll();
-		EmployeeDto empDto = employeeService.createEmployee(createTestEmployee());
-		EmployeeDto empDto2 = employeeService.createEmployee(createTestEmployee());
-
-		List<EmployeeDto> employees = employeeService.getAllEmployees();
-		assertTrue(employees.size() >= 2);
+		try {
+			//employeeRepository.deleteAll();
+			EmployeeDto empDto = employeeService.createEmployee(createTestEmployee());
+			EmployeeDto empDto2 = employeeService.createEmployee(createTestEmployee());
+			Thread.sleep(200);
+			List<EmployeeDto> employees = employeeService.getAllEmployees();
+			assertTrue(employees.size() >= 2, "Expected at least 2 employees but found " + employees.size());
+		} catch (InterruptedException  e) {
+			Thread.currentThread().interrupt();
+			fail("Test interrupted");
+		}
 	}
 
 	@Test
@@ -148,10 +158,15 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 	// Additional query tests
 	@Test
 	void findByEmail_WithExistingEmail_ShouldReturnEmployee() {
-		EmployeeDto employee = employeeService.createEmployee(createTestEmployee());
-		EmployeeDto found = employeeService.getEmployeeByEmail(employee.getEmail());
-
-		assertEquals(employee.getId(), found.getId());
+		try {
+			EmployeeDto employee = employeeService.createEmployee(createTestEmployee());
+			Thread.sleep(200);
+			EmployeeDto found = employeeService.getEmployeeByEmail(employee.getEmail());
+			assertEquals(employee.getId(), found.getId());
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			fail("Test interrupted");
+		}
 	}
 
 	@Test
