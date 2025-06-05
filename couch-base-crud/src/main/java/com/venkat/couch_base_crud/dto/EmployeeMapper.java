@@ -15,7 +15,7 @@ public class EmployeeMapper {
         employee.setLastName(dto.getLastName());
         employee.setEmail(dto.getEmail());
         employee.setAddress(AddressMapper.toDocument(dto.getAddress()));
-        employee.setPhones(PhoneMapper.toEntityList(dto.getPhones()));
+        employee.setPhones(PhoneMapper.toDocumentList(dto.getPhones()));
         return employee;
     }
 

@@ -15,7 +15,7 @@ public class PhoneMapper {
         return phone;
     }
 
-    public static List<Phone> toEntityList(List<PhoneDto> dtos) {
+    public static List<Phone> toDocumentList(List<PhoneDto> dtos) {
         if (dtos == null) return null;
         return dtos.stream().map(PhoneMapper::toDocument).collect(Collectors.toList());
     }

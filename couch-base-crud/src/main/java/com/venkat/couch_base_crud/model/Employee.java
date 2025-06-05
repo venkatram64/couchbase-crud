@@ -21,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document
-public class Employee {
+public class Employee {//this is document class
     @Id
     @GeneratedValue(strategy = GenerationStrategy.UNIQUE)
     private String id;
