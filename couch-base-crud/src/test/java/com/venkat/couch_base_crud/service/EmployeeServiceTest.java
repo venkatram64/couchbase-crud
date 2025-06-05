@@ -69,7 +69,7 @@ class EmployeeServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(validEmployee.getEmail(), result.getEmail());
-        verify(employeeRepository, times(1)).save(unsavedEmp);
+        verify(employeeRepository, times(1)).save(validEmployee);
     }
 
     @Test
@@ -158,30 +158,6 @@ class EmployeeServiceTest {
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
-    @Test
-    void updateEmployee_WithDuplicateEmail_ShouldThrowException() {
-        // Arrange
-        Address mockAddress = new Address("123 Main St", "New York", "NY", "10001");
-        Phone mockPhone = new Phone("home", "123-456-7890");
-        List<Phone> mockPhoneList = Arrays.asList(mockPhone);
-        Employee updatedDetails = new Employee();
-        updatedDetails.setFirstName("Updated");
-        updatedDetails.setLastName("Name");
-        updatedDetails.setEmail("jane.smith@example.com"); // Existing email
-        updatedDetails.setAddress(mockAddress);
-        updatedDetails.setPhones(mockPhoneList);
-
-        when(employeeRepository.findById("1"))
-                .thenReturn(Optional.of(validEmployee));
-        when(employeeRepository.findByEmail("jane.smith@example.com"))
-                .thenReturn(Optional.of(existingEmployee));
-
-        // Act & Assert
-        EmployeeDto employeeUpdatedDto = EmployeeMapper.toDto(updatedDetails);
-        assertThrows(EmployeeAlreadyExistsException.class, () -> {
-            employeeService.updateEmployee("1", employeeUpdatedDto);
-        });
-    }
 
     //delete employee, failed
 

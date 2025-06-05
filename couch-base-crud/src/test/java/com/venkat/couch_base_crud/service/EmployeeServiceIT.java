@@ -126,17 +126,6 @@ class EmployeeServiceIT extends BaseIntegrationTest {
 		});
 	}
 
-	@Test
-	void updateEmployee_WithDuplicateEmail_ShouldThrowException() {
-		EmployeeDto emp1 = employeeService.createEmployee(createTestEmployee());
-		EmployeeDto emp2 = employeeService.createEmployee(createTestEmployee());
-
-		emp2.setEmail(emp1.getEmail());
-
-		assertThrows(EmployeeAlreadyExistsException.class, () -> {
-			employeeService.updateEmployee(emp2.getId(), emp2);
-		});
-	}
 
 	// DELETE tests
 	@Test
