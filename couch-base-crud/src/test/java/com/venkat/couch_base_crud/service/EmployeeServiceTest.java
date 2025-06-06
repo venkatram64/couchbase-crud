@@ -141,26 +141,6 @@ class EmployeeServiceTest {
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
-    @Test
-    void updateEmployee_WithDuplicateEmail_ShouldThrowException() {
-        // Arrange
-        Employee updatedDetails = new Employee();
-        updatedDetails.setFirstName("Updated");
-        updatedDetails.setLastName("Name");
-        updatedDetails.setEmail("jane.smith@example.com"); // Existing email
-        updatedDetails.setAddress(new String[]{"New Address"});
-
-        when(employeeRepository.findById("1"))
-                .thenReturn(Optional.of(validEmployee));
-        when(employeeRepository.findByEmail("jane.smith@example.com"))
-                .thenReturn(Optional.of(existingEmployee));
-
-        // Act & Assert
-        assertThrows(EmployeeAlreadyExistsException.class, () -> {
-            employeeService.updateEmployee("1", updatedDetails);
-        });
-    }
-
     //delete employee, failed
 
     @Test

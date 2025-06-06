@@ -72,9 +72,6 @@ public class EmployeeService {
         try {
             Employee existingEmployee = employeeRepository.findById(id)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee with id " + id + " not found"));
-            if(employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
-                throw new EmployeeAlreadyExistsException("Employee with email " + employee.getEmail() + " already exists");
-            }
             existingEmployee.setFirstName(employee.getFirstName());
             existingEmployee.setLastName(employee.getLastName());
             existingEmployee.setEmail(employee.getEmail());
